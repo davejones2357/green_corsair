@@ -3,7 +3,11 @@ package main
 import (
 	"fmt"
 	"net"
+	"github.com/davejones2357/pigeon_post/protocol"
 )
+
+// This is a simple TCP client that connects to a server, sends a message, and waits for a reply.
+// Based on https://medium.com/@viktordev/socket-programming-in-go-write-a-simple-tcp-client-server-c9609edf3671
 
 func main() {
 
@@ -17,7 +21,9 @@ func main() {
 	}
 
 	// Send some data to the server
-	_, err = conn.Write([]byte("CONNECTION0123456789Hello, server!\n"))
+	msg:= protocol.SimpleMessage{"CONNECTION","0123456789","Hello new server\n"}
+	bytes,_ := protocol.Serialize(msg)
+	_, err = conn.Write([]byte(bytes))
 	if err != nil {
 		fmt.Println(err)
 		return
