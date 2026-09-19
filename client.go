@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"net"
-	"github.com/davejones2357/pigeon_post/protocol"
+	"log"
+	"pigeon_post/config"
+	"pigeon_post/protocol"
 )
 
 // This is a simple TCP client that connects to a server, sends a message, and waits for a reply.
@@ -12,13 +14,18 @@ import (
 func main() {
 
 	// Connect to the server
-	conn, err := net.Dial("tcp", "localhost:8080")
-	defer conn.Close()
+	
+	cfg, err := config.Load()
+    if err != nil {
+        log.Fatalf("CONFIG ERROR: %v", err)
+    }
 
+	conn, err := net.Dial(cfg.Protocol, cfg.Host + ":" + cfg.Port)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+	defer conn.Close()
 
 	// Send some data to the server
 	msg:= protocol.SimpleMessage{"CONNECTION","0123456789","Hello new server\n"}
