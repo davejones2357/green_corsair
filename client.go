@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"net"
 	"log"
+	"time"
+
 	"pigeon_post/config"
 	"pigeon_post/protocol"
+	"pigeon_post/types"
 )
 
 // This is a simple TCP client that connects to a server, sends a message, and waits for a reply.
@@ -27,21 +30,35 @@ func main() {
 	}
 	defer conn.Close()
 
-	// Send some data to the server
-	msg:= protocol.SimpleMessage{"CONNECTION","0123456789","Hello new server\n"}
-	bytes,_ := protocol.Serialize(msg)
-	_, err = conn.Write([]byte(bytes))
-	if err != nil {
-		fmt.Println(err)
+	// Build a CONNECT command with an arbitrary client ID
+	clientID := "client1234"
+	connectCmd := types.NewConnect(clientID)
+
+	// Convert to protocol message and serialize
+	msg := connectCmd.ToMessage()
+	data, n := protocol.Serialize(msg)
+
+	// Send the serialized bytes
+	if _, err := conn.Write(data[:n]); err != nil {
+		fmt.Println("write error:", err)
 		return
 	}
 
-	// Wait for and read the reply
-	buffer := make([]byte, 1024)
-	n, err := conn.Read(buffer)
+	// Wait for a server response
+	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	buf := make([]byte, 1024)
+	nr, err := conn.Read(buf)
 	if err != nil {
-		fmt.Println("Error reading:", err)
+		fmt.Println("read error (or no reply):", err)
 		return
 	}
-	fmt.Println("Server reply:", string(buffer[:n]))
+
+	resp, err := protocol.Deserialize(buf[:nr])
+	if err != nil {
+		fmt.Println("deserialize error:", err)
+		return
+	}
+
+	fmt.Printf("server reply: type=%q client=%q body=%q\n", resp.MessageType, resp.ClientID, resp.Message)
+
 }
