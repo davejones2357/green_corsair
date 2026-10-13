@@ -6,9 +6,9 @@ import (
 	"log"
 	"time"
 
-	"pigeon_post/config"
-	"pigeon_post/protocol"
-	"pigeon_post/types"
+	"github.com/davejones2357/pigeon_post/config"
+	"github.com/davejones2357/pigeon_post/protocol"
+	"github.com/davejones2357/pigeon_post/types"
 )
 
 // This is a simple TCP client that connects to a server, sends a message, and waits for a reply.
