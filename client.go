@@ -17,6 +17,7 @@ import (
 
 func main() {
 	start := flag.Bool("start", false, "start the client")
+	clientID := flag.String("client", "", "client ID to use when connecting")
 
 	flag.Parse()
 
@@ -25,10 +26,14 @@ func main() {
 		return
 	}
 
-	startClient()
+	if *clientID == "" {
+		log.Fatal("--client is required when using --start")
+	}
+
+	startClient(*clientID)
 }
 
-func startClient() {
+func startClient(clientID string) {
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("CONFIG ERROR: %v", err)
@@ -41,8 +46,6 @@ func startClient() {
 	}
 	defer conn.Close()
 
-	// Build a CONNECT command with an arbitrary client ID.
-	clientID := "client1234"
 	connectCmd := types.NewConnect(clientID)
 
 	// Convert to protocol message and serialize.
